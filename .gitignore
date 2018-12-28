@@ -4,3 +4,5 @@ config.el
 elpa/
 network-security.data
 projectile-bookmarks.eld
+var/
+session.*
