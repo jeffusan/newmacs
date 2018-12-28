@@ -1,0 +1,6 @@
+.emacs-theme
+auto-save-list/
+config.el
+elpa/
+network-security.data
+projectile-bookmarks.eld

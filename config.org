@@ -1,0 +1,558 @@
+* Emacs configuration
+
+This is my emacs configuration in Org mode.
+
+The idea behind using org mode for this is that I can get rid of all
+these cheatsheets I've flying around my system (and also physical
+desk) and have both the emacs-lisp code, the notes, and the
+cheatsheets all here.
+
+** Initial configuration
+*** Some personal information
+
+#+BEGIN_SRC emacs-lisp
+(setq user-full-name "Jeff Hemminger"
+      user-mail-address "jeff.hemminger@gmail.com")
+#+END_SRC
+
+*** Help emacs find my executables
+
+#+BEGIN_SRC emacs-lisp
+(setq exec-path (append exec-path '("/usr/local/bin")))
+(setq exec-path (append exec-path '("/home/jeff/bin")))
+#+END_SRC
+
+*** plumbing
+
+    To tell emacs that all saves should go to the ~/.backups~ folder.
+
+#+BEGIN_SRC emacs-lisp
+(setq backup-directory-alist `(("." . "~/.backups")))
+(defalias 'yes-or-no-p 'y-or-n-p)
+#+END_SRC
+*** ~use-package~
+
+   I manage all the packages for my emacs configuration through the
+   fantastic [[https://github.com/jwiegley/use-package][use-package]]. Here's how to get it:
+
+#+BEGIN_SRC emacs-lisp
+(require 'package)
+
+(setq package-enable-at-startup nil)
+(add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
+(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
+(add-to-list 'package-archives '("melpa-stable" . "http://stable.melpa.org/packages/"))
+(add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/"))
+(package-initialize)
+
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+
+(eval-when-compile
+  (require 'use-package))
+
+(require 'bind-key)
+#+END_SRC
+
+*** Appearance
+
+    Select the font size, family...
+
+#+BEGIN_SRC emacs-lisp
+(set-face-attribute
+ 'default nil :family "Operator Mono"
+ :height 170)
+#+END_SRC
+
+*** maintaining selected theme between sessions
+
+    I think I got all this from @anler, but am not sure :)
+
+#+BEGIN_SRC emacs-lisp
+(defun my-load-saved-theme ()
+  (interactive)
+  (when (file-exists-p my-saved-theme-filename)
+    (let ((theme (intern (with-temp-buffer
+                           (insert-file-contents my-saved-theme-filename)
+                           (buffer-string)))))
+      (unless (eq theme 'default)
+        (load-theme theme :no-confirm)))))
+
+(add-hook 'after-init-hook #'my-load-saved-theme)
+
+(defvar my-load-theme-hook
+  nil
+  "Hooks to run after loading a theme.")
+
+(defvar my-saved-theme-filename "~/.emacs.d/.emacs-theme")
+
+(advice-add 'load-theme :after #'my-save-theme)
+(advice-add 'disable-theme :after #'my-save-default-theme)
+(advice-add 'load-theme :after #'my-run-theme-hooks)
+
+(defun my-run-theme-hooks (theme &optional no-confirm no-enable)
+  (run-hooks 'my-load-theme-hook))
+
+(defun my-save-default-theme (disabled-theme)
+  (my-save-theme 'default))
+
+(defun my-save-theme (theme &optional no-confirm no-enable)
+  (with-temp-buffer
+    (insert (symbol-name theme))
+    (when (file-writable-p my-saved-theme-filename)
+      (write-region (point-min)
+                    (point-max)
+                    my-saved-theme-filename))))
+
+;; if you make changes to config.org, simply M-x load-config to reload
+(defun load-config ()
+  (interactive)
+  (org-babel-load-file (expand-file-name (concat user-emacs-directory "config.org"))))
+
+#+END_SRC
+
+** Tools
+*** Magit
+
+    Magit is a better way to use git, from within emacs, of course.
+
+#+BEGIN_SRC emacs-lisp
+(use-package magit
+  :ensure t
+  :config
+
+  (use-package magit-gh-pulls
+    :ensure t
+    :init
+    (add-hook 'magit-mode-hook 'turn-on-magit-gh-pulls))
+  :commands magit-status
+  :bind ("C-x g" . magit-status)
+)
+#+END_SRC
+
+    There are several tricks I like to do with Magit.
+
+**** commit & spinoff branch
+
+     Normally, when I work on a small patch for a project I don't
+     directly start creating the feature branch, but first create the
+     commit/commits that solve the issue and then create the branch &
+     pull request.
+
+     I do this by fixing and creating the commits normally (on top of
+     ~master~), and then within the magit screen, I just hit ~b s~,
+     making a spinoff of master, with the last commits.  This is so
+     convenient :)
+
+**** managing/creating pull requests
+
+     For creating pull requests, I use the ~magit-gh-pulls~ package,
+     that connects to the github API via HTTP and allows me to create,
+     list, and see the Pull Requests for the repo.
+
+     Normally I need to edit the ~.git/config~ file and add the remote
+     github repo:
+
+#+BEGIN_SRC
+[magit]
+        gh-pulls-repo = jeffusan/$repo
+#+END_SRC
+
+     After that's set, I can just ~# g~ to refresh the latest pull
+     requests, ~# o~ on a pr of the list to open in firefox, or ~# c~
+     to create a new PR from the existing changes.
+
+*** Projectile
+#+BEGIN_SRC emacs-lisp
+(use-package projectile
+  :ensure t
+  :config
+  (projectile-global-mode)
+  (setq projectile-mode-line
+        '(:eval (format " [%s]" (projectile-project-name))))
+  (setq projectile-remember-window-configs t)
+  (setq projectile-completion-system 'ivy))
+#+END_SRC
+
+*** Autopair
+
+    Autopair is a minor mode that magically pairs your parens.  This
+    means that when you open a ~(~, it inserts a ~)~ as well.
+
+#+BEGIN_SRC emacs-lisp
+(use-package autopair
+  :ensure t)
+#+END_SRC
+
+*** Flycheck
+
+    Flycheck is a spellchecker.  Truth be told, I don't use it very
+    much... but yeah, here it is!
+
+#+BEGIN_SRC emacs-lisp
+(use-package flycheck
+  :ensure t
+  :pin melpa-stable)
+#+END_SRC
+
+*** Hydra
+
+    Hydra allows me to create menus of keybindings.  I have several
+    ones, for accessing my dotfiles, spelllchecking, going to my org
+    files...
+
+#+BEGIN_SRC emacs-lisp
+(use-package hydra
+  :ensure t
+  :bind (("C-x t" . toggle/body)
+	 ("C-x j" . gotoline/body)
+	 ("C-x c" . orghydra/body)
+	 ("C-x p" . dotfiles/body))
+  :config
+
+  (defhydra toggle (:color blue)
+    "toggle"
+    ("a" abbrev-mode "abbrev")
+    ("s" flyspell-mode "flyspell")
+    ("f" flycheck-mode "flycheck")
+    ("d" toggle-debug-on-error "debug")
+    ("c" fci-mode "fCi")
+    ("t" toggle-truncate-lines "truncate")
+    ("w" whitespace-mode "whitespace")
+    ("q" nil "cancel"))
+
+  (defhydra orghydra (:color blue)
+    "org"
+    ("i" org-clock-in "clock in")
+    ("o" org-clock-out "clock out")
+    ("n" (find-file "~/org/notes.org") "notes.org")
+    ("I" (find-file "~/org/i.org") "i.org")
+    ("q" nil "cancel"))
+
+  (defhydra dotfiles (:color black)
+    "dotfiles"
+    ("c" (find-file "~/.emacs.d/config.org") "config.org")
+    ("z" (find-file "~/.zshrc") "zshrc")
+    ("q" nil "cancel"))
+
+  (defhydra gotoline
+    ( :pre (linum-mode 1)
+	   :post (linum-mode -1))
+    "goto"
+    ("t" (lambda () (interactive)(move-to-window-line-top-bottom 0)) "top")
+    ("b" (lambda () (interactive)(move-to-window-line-top-bottom -1)) "bottom")
+    ("m" (lambda () (interactive)(move-to-window-line-top-bottom)) "middle")
+    ("e" (lambda () (interactive)(end-of-buffer)) "end")
+    ("c" recenter-top-bottom "recenter")
+    ("n" next-line "down")
+    ("p" (lambda () (interactive) (forward-line -1))  "up")
+    ("g" goto-line "goto-line")))
+#+END_SRC
+
+*** Restclient
+
+    Restclient is an awesome tool that allows you to describe HTTP
+    request in plain text and execute them.  From [fn:1]their readme:
+
+    | keybinding | action                                                                                         |
+    |------------+------------------------------------------------------------------------------------------------|
+    | ~C-c C-c~  | runs the query under the cursor, tries to pretty-print the response (if possible)              |
+    | ~C-c C-r~  | same, but doesn't do anything with the response, just shows the buffer                         |
+    | ~C-c C-v~  | same as C-c C-c, but doesn't switch focus to other window                                      |
+    | ~C-c C-p~  | jump to the previous query                                                                     |
+    | ~C-c C-n~  | jump to the next query                                                                         |
+    | ~C-c C-.~  | mark the query under the cursor                                                                |
+    | ~C-c C-u~  | copy query under the cursor as a curl command                                                  |
+    | ~C-c C-g~  | start a helm session with sources for variables and requests (if helm is available, of course) |
+    | ~C-c n n~  | narrow to regi                                                                                 |
+
+#+BEGIN_SRC emacs-lisp
+(use-package restclient
+  :ensure t
+  :mode (("\\.http\\'" . restclient-mode)))
+#+END_SRC
+
+*** Org mode
+
+    I try to write down everything in org mode, and to keep it
+    updated.  This is my current configuration.
+
+#+BEGIN_SRC emacs-lisp
+(use-package org
+  :ensure t
+  :bind (
+         ("C-c a a" . org-agenda)
+	 ("C-c c" . org-capture)
+  )
+  :config
+
+  (use-package org-bullets
+    :ensure t
+    :commands (org-bullets-mode)
+    :init (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((dot . t)
+     (mscgen . t)
+     (python . t)))
+  (setq org-agenda-files '("~/org/")
+	org-default-notes-file (concat org-directory "/notes.org")
+	org-capture-templates '(("a" "Appointment" entry (file  "~/org/appointments.org" "Appointments") "* TODO %?\n:PROPERTIES:\n\n:END:\nDEADLINE: %^T \n %i\n\n")
+				("n" "Note" entry (file+headline "~/org/notes.org" "Notes") "* Note %?\n%T")
+				("l" "Link" entry (file+headline "~/org/links.org" "Links") "* %? %^L %^g \n%T" :prepend t)
+				("P" "Paper" entry (file+headline "~/org/papers.org" "Papers") "* %? %^L %^g \n%T" :prepend t)
+				("t" "To Do Item" entry (file+headline "~/org/i.org" "Work") "* TODO %?\n%T" :prepend t)
+				("p" "Personal To Do Item" entry (file+headline "~/org/i.org" "Personal") "* TODO %?\n%T" :prepend t))
+	org-src-fontify-natively t))
+#+END_SRC
+    
+*** Expand region
+
+    Expand region is an useful little tool.  With it I can select a
+    higher region each time I hit ~C-@~.  For example, imagine we have
+    the following function call in lisp (and that the caret is in the
+    ~^~ position):
+
+#+BEGIN_SRC
+(hello (dolly))
+         ^
+#+END_SRC
+
+    If I hit ~C-@~ once, I'll get this selected:
+
+#+BEGIN_SRC
+(hello (dolly))
+        ^---^
+#+END_SRC
+
+    If I hit it once again, I'll get:
+
+#+BEGIN_SRC
+(hello (dolly))
+       ^-----^
+#+END_SRC
+
+    And if I hit it again, I'll get:
+
+#+BEGIN_SRC
+(hello (dolly))
+ ^-----------^
+#+END_SRC
+
+    Finally, if I hit it 4 times, the whole sexp will be selected:
+
+#+BEGIN_SRC
+(hello (dolly))
+^-------------^
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+(use-package expand-region
+  :ensure t
+  :bind ("C-@" . er/expand-region))
+#+END_SRC
+
+*** Golden ratio mode
+
+    This is a really cool minor mode.  It makes the windows just look right.
+
+#+BEGIN_SRC emacs-lisp
+(use-package golden-ratio
+  :ensure t
+  :config (golden-ratio-mode))
+#+END_SRC
+*** Eshell Configuration
+#+BEGIN_SRC emacs-lisp
+(global-set-key (kbd "C-c e") 'eshell)
+;; Visual commands are commands which require a proper terminal.
+;; Eshell will run them in a term buffer when invoked.
+(setq eshell-visual-commands
+  '("less" "tmux" "htop" "top" "bash" "zsh" "fish"))
+(setq eshell-visual-subcommands
+  '(("git" "log" "l" "diff" "show")))
+
+(use-package exec-path-from-shell
+  :ensure t
+  :init
+  (when (memq window-system '(mac ns x))
+   ; (exec-path-from-shell-copy-env "PROJECT_HOME")
+    (exec-path-from-shell-copy-env "JAVA_HOME")
+    (exec-path-from-shell-initialize))
+  )
+
+#+END_SRC
+*** Helm
+#+BEGIN_SRC emacs-lisp
+(use-package helm
+  :ensure t
+  :config
+  ;; Activate Helm.
+  (helm-mode 1)
+  (helm-autoresize-mode 1)
+
+  ;; Enable fuzzy matching in Helm navigation.
+  (use-package helm-flx
+    :ensure t
+    :config
+    (with-eval-after-load "helm"
+      (require 'helm-flx)
+      (helm-flx-mode 1)))
+
+  ;; Set up a couple of tweaks from helm-ext.
+  (use-package helm-ext
+    :ensure t
+    :config
+    (helm-ext-ff-enable-skipping-dots t)
+    (helm-ext-ff-enable-auto-path-expansion t))
+
+  (use-package helm-projectile
+    :ensure t
+    ;; A binding for using Helm to pick files using Projectile,
+    ;; and override the normal grep with a Projectile based grep.
+    :bind (("C-c C-f" . helm-projectile-find-file-dwim)
+        ("C-x C-g" . helm-projectile-grep))
+    :config (helm-projectile-on))
+
+  ;; Make Helm look nice.
+  (setq-default helm-display-header-line nil
+                helm-autoresize-min-height 10
+                helm-autoresize-max-height 35
+                helm-split-window-in-side-p t
+                helm-M-x-fuzzy-match t
+                helm-buffers-fuzzy-matching t
+                helm-recentf-fuzzy-match t
+                helm-apropos-fuzzy-match t)
+  (set-face-attribute 'helm-source-header nil :height 0.75)
+  ;; Replace common selectors with Helm versions.
+  :bind (("M-x" . helm-M-x)
+        ("C-x C-f" . helm-find-files)
+        ("C-x C-g" . helm-do-grep)
+        ("C-x b" . helm-buffers-list)
+        ("C-t" . helm-imenu)
+        ("M-y" . helm-show-kill-ring)))
+
+;; Use Helm to complete with multiple matches in eshell.
+(add-hook 'eshell-mode-hook
+          (lambda ()
+(define-key eshell-mode-map [remap eshell-pcomplete] 'helm-esh-pcomplete)))
+
+#+END_SRC
+
+** Themes
+
+   I switch between a big number of themes, sometimes several times a
+   day, depending on my mood.  The ones I stick with as of now, are
+   the following:
+
+#+BEGIN_SRC emacs-lisp
+(use-package doom-themes :pin melpa-stable :ensure t :defer t)
+(use-package idea-darkula-theme :ensure t :defer t)
+(use-package punpun-theme :ensure t :defer t)
+(use-package white-theme :ensure t :defer t)
+(use-package arjen-grey-theme :ensure t :defer t)
+(use-package atom-one-dark-theme :ensure t :defer t)
+(use-package birds-of-paradise-plus-theme :ensure t :defer t)
+(use-package bliss-theme :ensure t :defer t)
+(use-package cyberpunk-theme :ensure t :defer t)
+(use-package espresso-theme :ensure t :defer t)
+(use-package github-theme :ensure t :defer t)
+(use-package heroku-theme :ensure t :defer t)
+(use-package idea-darkula-theme :ensure t :defer t)
+(use-package plan9-theme :ensure t :defer t)
+(use-package soothe-theme :ensure t :defer t)
+(use-package subatomic-theme :ensure t :defer t)
+(use-package sublime-themes :ensure t :defer t)
+(use-package white-theme :ensure t :defer t)
+(use-package madhat2r-theme :ensure t :defer t)
+(use-package kosmos-theme :ensure t :defer t)
+(use-package nord-theme :ensure t :defer t)
+#+END_SRC
+
+** Some more configuration for when all packages has been loaded
+
+#+BEGIN_SRC emacs-lisp
+(require 'bind-key)
+#+END_SRC
+
+** Weird characters I write
+
+   In a day to day basis, I only use the ~λ~ there, but who knows? Now
+   I can write most of those letters :)
+
+#+BEGIN_SRC emacs-lisp
+(global-set-key (kbd "M-g a") "α") ; alpha
+(global-set-key (kbd "M-g b") "β") ; beta
+(global-set-key (kbd "M-g g") "γ") ; gamma
+(global-set-key (kbd "M-g d") "δ") ; delta
+(global-set-key (kbd "M-g e") "ε") ; epsilon
+(global-set-key (kbd "M-g z") "ζ") ; zeta
+(global-set-key (kbd "M-g h") "η") ; eta
+(global-set-key (kbd "M-g q") "θ") ; theta
+(global-set-key (kbd "M-g i") "ι") ; iota
+(global-set-key (kbd "M-g k") "κ") ; kappa
+(global-set-key (kbd "M-g l") "λ") ; lambda
+(global-set-key (kbd "M-g m") "μ") ; mu
+(global-set-key (kbd "M-g n") "ν") ; nu
+(global-set-key (kbd "M-g x") "ξ") ; xi
+(global-set-key (kbd "M-g o") "ο") ; omicron
+(global-set-key (kbd "M-g p") "π") ; pi
+(global-set-key (kbd "M-g r") "ρ") ; rho
+(global-set-key (kbd "M-g s") "σ") ; psi
+(global-set-key (kbd "M-g t") "τ") ; tau
+(global-set-key (kbd "M-g u") "υ") ; upsilon
+(global-set-key (kbd "M-g f") "ϕ") ; phi
+(global-set-key (kbd "M-g j") "φ") ; phi
+(global-set-key (kbd "M-g c") "χ") ; xi
+(global-set-key (kbd "M-g y") "ψ") ; psi
+(global-set-key (kbd "M-g w") "ω") ; omega
+(global-set-key (kbd "M-g A") "Α") ; ALPHA
+(global-set-key (kbd "M-g B") "Β") ; BETA
+(global-set-key (kbd "M-g G") "Γ") ; GAMMA
+(global-set-key (kbd "M-g D") "Δ") ; DELTA
+(global-set-key (kbd "M-g E") "Ε") ; EPSILON
+(global-set-key (kbd "M-g Z") "Ζ") ; ZETA
+(global-set-key (kbd "M-g H") "Η") ; ETA
+(global-set-key (kbd "M-g Q") "Θ") ; THETA
+(global-set-key (kbd "M-g I") "Ι") ; IOTA
+(global-set-key (kbd "M-g K") "Κ") ; KAPPA
+(global-set-key (kbd "M-g L") "Λ") ; LAMBDA
+(global-set-key (kbd "M-g M") "Μ") ; MU
+(global-set-key (kbd "M-g N") "Ν") ; NU
+(global-set-key (kbd "M-g X") "Ξ") ; XI
+(global-set-key (kbd "M-g O") "Ο") ; OMICRON
+(global-set-key (kbd "M-g P") "Π") ; PI
+(global-set-key (kbd "M-g R") "Ρ") ; RHO
+(global-set-key (kbd "M-g S") "Σ") ; PSI
+(global-set-key (kbd "M-g T") "Τ") ; TAU
+(global-set-key (kbd "M-g U") "Υ") ; UPSILON
+(global-set-key (kbd "M-g F") "Φ") ; PHI
+(global-set-key (kbd "M-g J") "Φ") ; PHI
+(global-set-key (kbd "M-g C") "Χ") ; XI
+(global-set-key (kbd "M-g Y") "Ψ") ; PSI
+(global-set-key (kbd "M-g W") "Ω") ; OMEGA
+(global-set-key (kbd "M-g .") "∘")
+#+END_SRC
+
+** Thanks
+
+Most of this is borrowed configuration from others.
+
+- Thanks to Pepe Garcia, https://github.com/pepegar
+- and Bodil Stokke, https://github.com/bodil
+in particular.
+
+Also 
+- [fn:2]anler
+- [fn:3]danielmai
+- [fn:4]jwiegley
+- [fn:5]abo-abo
+
+* Footnotes
+
+[fn:1] https://github.com/pashky/restclient.el
+[fn:2] https://github.com/anler/.emacs.d
+[fn:3] https://github.com/danielmai
+[fn:4] https://github.com/jwiegley
+[fn:5] https://github.com/abo-abo
