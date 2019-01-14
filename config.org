@@ -208,8 +208,15 @@ cheatsheets all here.
   :ensure t
   :bind (("C-x t" . toggle/body)
 	 ("C-x j" . gotoline/body)
+         ("C-x ," . scala/body)
 	 ("C-x p" . dotfiles/body))
   :config
+
+  (defhydra scala (:color red)
+    "scala"
+    ("b" ensime-sbt "sbt")
+    ("c" ensime-inf-switch "console")
+    ("t" ensime-sbt-do-test "test"))
 
   (defhydra toggle (:color blue)
     "toggle"
