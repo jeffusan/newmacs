@@ -12,7 +12,7 @@ cheatsheets all here.
 
 #+BEGIN_SRC emacs-lisp
 (setq user-full-name "Jeff Hemminger"
-      user-mail-address "jeff.hemminger@gmail.com")
+      user-mail-address "jeff.hemminger@deciphernow.com")
 #+END_SRC
 
 *** Help emacs find my executables
@@ -20,6 +20,7 @@ cheatsheets all here.
 #+BEGIN_SRC emacs-lisp
 (setq exec-path (append exec-path '("/usr/local/bin")))
 (setq exec-path (append exec-path '("/home/jeff/bin")))
+(setq exec-path (append exec-path '("/home/jeff/go/bin")))
 #+END_SRC
 
 *** plumbing
@@ -207,7 +208,6 @@ cheatsheets all here.
   :ensure t
   :bind (("C-x t" . toggle/body)
 	 ("C-x j" . gotoline/body)
-	 ("C-x c" . orghydra/body)
 	 ("C-x p" . dotfiles/body))
   :config
 
@@ -222,20 +222,6 @@ cheatsheets all here.
     ("w" whitespace-mode "whitespace")
     ("q" nil "cancel"))
 
-  (defhydra orghydra (:color blue)
-    "org"
-    ("i" org-clock-in "clock in")
-    ("o" org-clock-out "clock out")
-    ("n" (find-file "~/org/notes.org") "notes.org")
-    ("I" (find-file "~/org/i.org") "i.org")
-    ("q" nil "cancel"))
-
-  (defhydra dotfiles (:color black)
-    "dotfiles"
-    ("c" (find-file "~/.emacs.d/config.org") "config.org")
-    ("z" (find-file "~/.zshrc") "zshrc")
-    ("q" nil "cancel"))
-
   (defhydra gotoline
     ( :pre (linum-mode 1)
 	   :post (linum-mode -1))
@@ -248,6 +234,14 @@ cheatsheets all here.
     ("n" next-line "down")
     ("p" (lambda () (interactive) (forward-line -1))  "up")
     ("g" goto-line "goto-line")))
+
+  (defhydra dotfiles (:color black)
+    "dotfiles"
+    ("c" (find-file "~/.emacs.d/config.org") "config.org")
+    ("b" (find-file "~/.bashrc") "bashrc")
+    ("s" (find-file "~/Source") "Source")
+    ("q" nil "cancel"))
+
 #+END_SRC
 
 *** Restclient
@@ -535,6 +529,46 @@ cheatsheets all here.
 (global-set-key (kbd "M-g .") "∘")
 #+END_SRC
 
+** Programming languages
+
+   At the time of writing this, I mostly write scala, but I've used a
+   number of languages previously:
+
+#+BEGIN_SRC emacs-lisp
+(use-package ensime
+  :ensure t
+  :pin melpa-stable
+  :config (setq ensime-startup-notification nil))
+
+(use-package scala-mode
+  :ensure t
+  :interpreter ("scala" . scala-mode)
+  :config
+  (use-package sbt-mode :ensure t))
+
+(defun auto-complete-for-go ()
+  (auto-complete-mode 1))
+  (add-hook 'go-mode-hook 'auto-complete-for-go)
+
+(use-package go-mode
+  :ensure t
+  :bind (("M-." . godef-jump)
+         ("M-," . pop-tag-mark))
+  :init
+  (use-package go-eldoc
+    :ensure t
+    :config
+    (add-hook 'go-mode-hook 'go-eldoc-setup))
+  (use-package go-complete
+    :ensure t
+    :config
+    (add-hook 'go-mode-hook 'auto-complete-for-go))
+  (use-package flycheck
+    :config 
+      (setq gofmt-command "goimports")
+      (add-hook 'before-save-hook 'gofmt-before-save)))
+#+END_SRC
+
 ** Thanks
 
 Most of this is borrowed configuration from others.
@@ -548,6 +582,7 @@ Also
 - [fn:3]danielmai
 - [fn:4]jwiegley
 - [fn:5]abo-abo
+
 
 * Footnotes
 

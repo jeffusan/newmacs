@@ -49,10 +49,11 @@
     ("72a81c54c97b9e5efcc3ea214382615649ebb539cb4f2fe3a46cd12af72c7607" default)))
  '(package-selected-packages
    (quote
-    (magit-gh-pulls helm-ext helm-flx nord-theme kosmos-theme madhat2r-theme sublime-themes subatomic-theme soothe-theme plan9-theme heroku-theme github-theme espresso-theme cyberpunk-theme bliss-theme birds-of-paradise-plus-theme atom-one-dark-theme arjen-grey-theme white-theme punpun-theme idea-darkula-theme doom-themes exec-path-from-shell golden-ratio expand-region org-bullets restclient hydra flycheck autopair projectile magit use-package))))
+    (go-eldoc go-complete go-mode ensime magit-gh-pulls helm-ext helm-flx nord-theme kosmos-theme madhat2r-theme sublime-themes subatomic-theme soothe-theme plan9-theme heroku-theme github-theme espresso-theme cyberpunk-theme bliss-theme birds-of-paradise-plus-theme atom-one-dark-theme arjen-grey-theme white-theme punpun-theme idea-darkula-theme doom-themes exec-path-from-shell golden-ratio expand-region org-bullets restclient hydra flycheck autopair projectile magit use-package))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
+(put 'magit-clean 'disabled nil)

@@ -6,3 +6,5 @@ network-security.data
 projectile-bookmarks.eld
 var/
 session.*
+eshell/
+ido.last
