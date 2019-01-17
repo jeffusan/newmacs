@@ -440,6 +440,7 @@ cheatsheets all here.
   :config
   (use-package sbt-mode :ensure t))
 
+(use-package auto-complete :ensure)
 (defun auto-complete-for-go ()
   (auto-complete-mode 1))
   (add-hook 'go-mode-hook 'auto-complete-for-go)
@@ -450,6 +451,7 @@ cheatsheets all here.
          ("M-," . pop-tag-mark))
   :init
   (use-package go-eldoc
+    :ensure t
     :config
     (add-hook 'go-mode-hook 'go-eldoc-setup))
   (use-package go-complete
@@ -457,6 +459,7 @@ cheatsheets all here.
     :config
     (add-hook 'go-mode-hook 'auto-complete-for-go))
   (use-package flycheck
+    :ensure t
     :config 
       (setq gofmt-command "goimports")
       (add-hook 'before-save-hook 'gofmt-before-save)))
