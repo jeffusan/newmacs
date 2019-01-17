@@ -8,3 +8,6 @@ var/
 session.*
 eshell/
 ido.last
+ac-comphist.dat
+history
+recentf
