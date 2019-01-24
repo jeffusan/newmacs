@@ -433,6 +433,37 @@ A little help with terraform:
     ))
 #+END_SRC
 
+*** Ivy
+Open swiper-isearch with C-s, and then put copy the word under the cursor to the minibuffer with M-n.
+
+For extending the search to the next word, use M-j.
+#+BEGIN_SRC emacs-lisp
+(use-package ivy
+  :diminish ivy-mode
+  :bind (("C-x C-b" . ivy-switch-buffer))
+  :config
+      (setq ivy-use-virtual-buffers t
+            ivy-count-format "%d/%d "
+            ;;ivy-re-builders-alist '((swiper . ivy--regex-plus)
+            ;;                        (t      . ivy--regex-fuzzy))
+))
+(use-package flx)
+
+(use-package counsel
+  :bind (("M-x"     . counsel-M-x)
+         ([f9]      . counsel-load-theme)))
+
+(use-package counsel-projectile
+  :bind (("C-c a g" . counsel-ag)
+         ("C-x C-f" . counsel-find-file)
+         ("C-c p h" . counsel-projectile)
+         ("C-c p v" . projectile-vc)
+         ("C-c p p" . counsel-projectile-switch-project)))
+
+(use-package swiper
+  :bind (("C-s" . swiper)
+         ("C-;" . swiper-avy)))
+#+END_SRC
 ** Themes
 
    I switch between a big number of themes, sometimes several times a
