@@ -37,21 +37,32 @@ cheatsheets all here.
    fantastic [[https://github.com/jwiegley/use-package][use-package]]. Here's how to get it:
 
 #+BEGIN_SRC emacs-lisp
+
 (require 'package)
 
 (setq package-enable-at-startup nil)
+(add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/"))
 (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
 (add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
 (add-to-list 'package-archives '("melpa-stable" . "http://stable.melpa.org/packages/"))
-(add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/"))
 (package-initialize)
 
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
+(when (not (package-installed-p 'paradox))
+  (package-install 'paradox))
 
-(eval-when-compile
-  (require 'use-package))
+(paradox-require 'use-package)
+
+(require 'use-package)
+
+(setq use-package-always-ensure t)
+
+
+;(unless (package-installed-p 'use-package)
+;  (package-refresh-contents)
+;  (package-install 'use-package))
+
+;(eval-when-compile
+;  (require 'use-package))
 
 (require 'bind-key)
 #+END_SRC
@@ -63,9 +74,14 @@ cheatsheets all here.
 #+BEGIN_SRC emacs-lisp
 (set-face-attribute
  'default nil :family "Operator Mono"
- :height 170)
+ :height 160)
 #+END_SRC
-
+*** Just load themes
+I accept the risk. Theme tooltips too.
+#+BEGIN_SRC emacs-lisp
+(setq custom-safe-themes t)
+(setq x-gtk-use-system-tooltips nil)
+#+END_SRC
 *** maintaining selected theme between sessions
 
     I think I got all this from @anler, but am not sure :)
@@ -167,13 +183,25 @@ cheatsheets all here.
 *** Projectile
 #+BEGIN_SRC emacs-lisp
 (use-package projectile
-  :ensure t
+  :commands (all-the-icons-icon-for-dir all-the-icons-icon-for-file)
+  :ensure
   :config
-  (projectile-global-mode)
-  (setq projectile-mode-line
-        '(:eval (format " [%s]" (projectile-project-name))))
-  (setq projectile-remember-window-configs t)
-  (setq projectile-completion-system 'ivy))
+  (progn
+    (use-package neotree :ensure)
+    (projectile-mode 1)
+    (defun neotree-project-dir ()
+      "Open NeoTree using the git root."
+      (interactive)
+      (let ((project-dir (projectile-project-root))
+            (file-name (buffer-file-name)))
+        (if project-dir
+            (if (neotree-toggle)
+                (progn
+                  (neotree-dir project-dir)
+                  (neotree-find file-name)))
+          (message "Could not find git project root."))))
+    (global-set-key [f8] 'neotree-project-dir)
+    ))
 #+END_SRC
 
 *** Autopair
@@ -183,20 +211,10 @@ cheatsheets all here.
 
 #+BEGIN_SRC emacs-lisp
 (use-package autopair
-  :ensure t)
-#+END_SRC
-
-*** Flycheck
-
-    Flycheck is a spellchecker.  Truth be told, I don't use it very
-    much... but yeah, here it is!
-
-#+BEGIN_SRC emacs-lisp
-(use-package flycheck
   :ensure t
-  :pin melpa-stable)
+  :config
+  (autopair-global-mode))
 #+END_SRC
-
 *** Hydra
 
     Hydra allows me to create menus of keybindings.  I have several
@@ -384,61 +402,35 @@ cheatsheets all here.
   )
 
 #+END_SRC
-*** Helm
+
+*** Terraform
+[[https://github.com/syohex/emacs-terraform-modehttps://github.com/syohex/emacs-terraform-mode][github]]
+A little help with terraform:
+- Syntax highlighting
+- Indentation
+- imenu
+
 #+BEGIN_SRC emacs-lisp
-(use-package helm
-  :ensure t
+(use-package terraform-mode
+  :ensure
+  :mode (("\\.tf$" . terraform-mode))
   :config
-  ;; Activate Helm.
-  (helm-mode 1)
-  (helm-autoresize-mode 1)
+  (progn
+    (add-hook 'terraform-mode-hook #'terraform-format-on-save-mode)
+   )
+   (setq terraform-indent-level 4))
+#+END_SRC
 
-  ;; Enable fuzzy matching in Helm navigation.
-  (use-package helm-flx
-    :ensure t
-    :config
-    (with-eval-after-load "helm"
-      (require 'helm-flx)
-      (helm-flx-mode 1)))
-
-  ;; Set up a couple of tweaks from helm-ext.
-  (use-package helm-ext
-    :ensure t
-    :config
-    (helm-ext-ff-enable-skipping-dots t)
-    (helm-ext-ff-enable-auto-path-expansion t))
-
-  (use-package helm-projectile
-    :ensure t
-    ;; A binding for using Helm to pick files using Projectile,
-    ;; and override the normal grep with a Projectile based grep.
-    :bind (("C-c C-f" . helm-projectile-find-file-dwim)
-        ("C-x C-g" . helm-projectile-grep))
-    :config (helm-projectile-on))
-
-  ;; Make Helm look nice.
-  (setq-default helm-display-header-line nil
-                helm-autoresize-min-height 10
-                helm-autoresize-max-height 35
-                helm-split-window-in-side-p t
-                helm-M-x-fuzzy-match t
-                helm-buffers-fuzzy-matching t
-                helm-recentf-fuzzy-match t
-                helm-apropos-fuzzy-match t)
-  (set-face-attribute 'helm-source-header nil :height 0.75)
-  ;; Replace common selectors with Helm versions.
-  :bind (("M-x" . helm-M-x)
-        ("C-x C-f" . helm-find-files)
-        ("C-x C-g" . helm-do-grep)
-        ("C-x b" . helm-buffers-list)
-        ("C-t" . helm-imenu)
-        ("M-y" . helm-show-kill-ring)))
-
-;; Use Helm to complete with multiple matches in eshell.
-(add-hook 'eshell-mode-hook
-          (lambda ()
-(define-key eshell-mode-map [remap eshell-pcomplete] 'helm-esh-pcomplete)))
-
+*** Yaml
+[[https://github.com/yoshiki/yaml-mode][github]]
+#+BEGIN_SRC emacs-lisp
+(use-package yaml-mode
+  :ensure
+  :mode (("\\.yml\\'" . yaml-mode))
+  :config
+  (progn
+    (use-package yaml-tomato :ensure)
+    ))
 #+END_SRC
 
 ** Themes
@@ -471,69 +463,10 @@ cheatsheets all here.
 (use-package nord-theme :ensure t :defer t)
 #+END_SRC
 
-** Some more configuration for when all packages has been loaded
+** Some more configuration for when all packages have been loaded
 
 #+BEGIN_SRC emacs-lisp
 (require 'bind-key)
-#+END_SRC
-
-** Weird characters I write
-
-   In a day to day basis, I only use the ~λ~ there, but who knows? Now
-   I can write most of those letters :)
-
-#+BEGIN_SRC emacs-lisp
-(global-set-key (kbd "M-g a") "α") ; alpha
-(global-set-key (kbd "M-g b") "β") ; beta
-(global-set-key (kbd "M-g g") "γ") ; gamma
-(global-set-key (kbd "M-g d") "δ") ; delta
-(global-set-key (kbd "M-g e") "ε") ; epsilon
-(global-set-key (kbd "M-g z") "ζ") ; zeta
-(global-set-key (kbd "M-g h") "η") ; eta
-(global-set-key (kbd "M-g q") "θ") ; theta
-(global-set-key (kbd "M-g i") "ι") ; iota
-(global-set-key (kbd "M-g k") "κ") ; kappa
-(global-set-key (kbd "M-g l") "λ") ; lambda
-(global-set-key (kbd "M-g m") "μ") ; mu
-(global-set-key (kbd "M-g n") "ν") ; nu
-(global-set-key (kbd "M-g x") "ξ") ; xi
-(global-set-key (kbd "M-g o") "ο") ; omicron
-(global-set-key (kbd "M-g p") "π") ; pi
-(global-set-key (kbd "M-g r") "ρ") ; rho
-(global-set-key (kbd "M-g s") "σ") ; psi
-(global-set-key (kbd "M-g t") "τ") ; tau
-(global-set-key (kbd "M-g u") "υ") ; upsilon
-(global-set-key (kbd "M-g f") "ϕ") ; phi
-(global-set-key (kbd "M-g j") "φ") ; phi
-(global-set-key (kbd "M-g c") "χ") ; xi
-(global-set-key (kbd "M-g y") "ψ") ; psi
-(global-set-key (kbd "M-g w") "ω") ; omega
-(global-set-key (kbd "M-g A") "Α") ; ALPHA
-(global-set-key (kbd "M-g B") "Β") ; BETA
-(global-set-key (kbd "M-g G") "Γ") ; GAMMA
-(global-set-key (kbd "M-g D") "Δ") ; DELTA
-(global-set-key (kbd "M-g E") "Ε") ; EPSILON
-(global-set-key (kbd "M-g Z") "Ζ") ; ZETA
-(global-set-key (kbd "M-g H") "Η") ; ETA
-(global-set-key (kbd "M-g Q") "Θ") ; THETA
-(global-set-key (kbd "M-g I") "Ι") ; IOTA
-(global-set-key (kbd "M-g K") "Κ") ; KAPPA
-(global-set-key (kbd "M-g L") "Λ") ; LAMBDA
-(global-set-key (kbd "M-g M") "Μ") ; MU
-(global-set-key (kbd "M-g N") "Ν") ; NU
-(global-set-key (kbd "M-g X") "Ξ") ; XI
-(global-set-key (kbd "M-g O") "Ο") ; OMICRON
-(global-set-key (kbd "M-g P") "Π") ; PI
-(global-set-key (kbd "M-g R") "Ρ") ; RHO
-(global-set-key (kbd "M-g S") "Σ") ; PSI
-(global-set-key (kbd "M-g T") "Τ") ; TAU
-(global-set-key (kbd "M-g U") "Υ") ; UPSILON
-(global-set-key (kbd "M-g F") "Φ") ; PHI
-(global-set-key (kbd "M-g J") "Φ") ; PHI
-(global-set-key (kbd "M-g C") "Χ") ; XI
-(global-set-key (kbd "M-g Y") "Ψ") ; PSI
-(global-set-key (kbd "M-g W") "Ω") ; OMEGA
-(global-set-key (kbd "M-g .") "∘")
 #+END_SRC
 
 ** Programming languages
@@ -553,6 +486,7 @@ cheatsheets all here.
   :config
   (use-package sbt-mode :ensure t))
 
+(use-package auto-complete :ensure)
 (defun auto-complete-for-go ()
   (auto-complete-mode 1))
   (add-hook 'go-mode-hook 'auto-complete-for-go)
@@ -571,9 +505,11 @@ cheatsheets all here.
     :config
     (add-hook 'go-mode-hook 'auto-complete-for-go))
   (use-package flycheck
+    :ensure t
     :config 
       (setq gofmt-command "goimports")
       (add-hook 'before-save-hook 'gofmt-before-save)))
+
 #+END_SRC
 
 ** Thanks
