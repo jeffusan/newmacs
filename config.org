@@ -63,9 +63,14 @@ cheatsheets all here.
 #+BEGIN_SRC emacs-lisp
 (set-face-attribute
  'default nil :family "Operator Mono"
- :height 170)
+ :height 160)
 #+END_SRC
-
+*** Just load themes
+I accept the risk. Theme tooltips too.
+#+BEGIN_SRC emacs-lisp
+(setq custom-safe-themes t)
+(setq x-gtk-use-system-tooltips nil)
+#+END_SRC
 *** maintaining selected theme between sessions
 
     I think I got all this from @anler, but am not sure :)
@@ -387,6 +392,36 @@ cheatsheets all here.
 
 #+END_SRC
 
+*** Terraform
+[[https://github.com/syohex/emacs-terraform-modehttps://github.com/syohex/emacs-terraform-mode][github]]
+A little help with terraform:
+- Syntax highlighting
+- Indentation
+- imenu
+
+#+BEGIN_SRC emacs-lisp
+(use-package terraform-mode
+  :ensure
+  :mode (("\\.tf$" . terraform-mode))
+  :config
+  (progn
+    (add-hook 'terraform-mode-hook #'terraform-format-on-save-mode)
+   )
+   (setq terraform-indent-level 4))
+#+END_SRC
+
+*** Yaml
+[[https://github.com/yoshiki/yaml-mode][github]]
+#+BEGIN_SRC emacs-lisp
+(use-package yaml-mode
+  :ensure
+  :mode (("\\.yml\\'" . yaml-mode))
+  :config
+  (progn
+    (use-package yaml-tomato :ensure)
+    ))
+#+END_SRC
+
 ** Themes
 
    I switch between a big number of themes, sometimes several times a
@@ -417,7 +452,7 @@ cheatsheets all here.
 (use-package nord-theme :ensure t :defer t)
 #+END_SRC
 
-** Some more configuration for when all packages has been loaded
+** Some more configuration for when all packages have been loaded
 
 #+BEGIN_SRC emacs-lisp
 (require 'bind-key)
