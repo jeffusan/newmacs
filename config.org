@@ -25,46 +25,16 @@ cheatsheets all here.
 
 *** plumbing
 
-    To tell emacs that all saves should go to the ~/.backups~ folder.
+    Tell emacs that all saves should go to the ~/.backups~ folder.
 
 #+BEGIN_SRC emacs-lisp
 (setq backup-directory-alist `(("." . "~/.backups")))
-(defalias 'yes-or-no-p 'y-or-n-p)
 #+END_SRC
-*** ~use-package~
 
-   I manage all the packages for my emacs configuration through the
-   fantastic [[https://github.com/jwiegley/use-package][use-package]]. Here's how to get it:
+    Tell emacs that y or n will suffice.
 
 #+BEGIN_SRC emacs-lisp
-
-(require 'package)
-
-(setq package-enable-at-startup nil)
-(add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/"))
-(add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
-(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
-(add-to-list 'package-archives '("melpa-stable" . "http://stable.melpa.org/packages/"))
-(package-initialize)
-
-(when (not (package-installed-p 'paradox))
-  (package-install 'paradox))
-
-(paradox-require 'use-package)
-
-(require 'use-package)
-
-(setq use-package-always-ensure t)
-
-
-;(unless (package-installed-p 'use-package)
-;  (package-refresh-contents)
-;  (package-install 'use-package))
-
-;(eval-when-compile
-;  (require 'use-package))
-
-(require 'bind-key)
+(defalias 'yes-or-no-p 'y-or-n-p)
 #+END_SRC
 
 *** Appearance
@@ -76,15 +46,18 @@ cheatsheets all here.
  'default nil :family "Operator Mono"
  :height 160)
 #+END_SRC
+
 *** Just load themes
+
 I accept the risk. Theme tooltips too.
 #+BEGIN_SRC emacs-lisp
 (setq custom-safe-themes t)
 (setq x-gtk-use-system-tooltips nil)
 #+END_SRC
+
 *** maintaining selected theme between sessions
 
-    I think I got all this from @anler, but am not sure :)
+    I got this from @pepegar[fn:1], and he thinks he got it from @anler[fn:2].
 
 #+BEGIN_SRC emacs-lisp
 (defun my-load-saved-theme ()
@@ -121,7 +94,10 @@ I accept the risk. Theme tooltips too.
       (write-region (point-min)
                     (point-max)
                     my-saved-theme-filename))))
+#+END_SRC
 
+*** Reload configuration via function
+#+BEGIN_SRC emacs-lisp
 ;; if you make changes to config.org, simply M-x load-config to reload
 (defun load-config ()
   (interactive)
@@ -137,15 +113,12 @@ I accept the risk. Theme tooltips too.
 #+BEGIN_SRC emacs-lisp
 (use-package magit
   :ensure t
-  :config
-
-  (use-package magit-gh-pulls
-    :ensure t
-    :init
-    (add-hook 'magit-mode-hook 'turn-on-magit-gh-pulls))
   :commands magit-status
   :bind ("C-x g" . magit-status)
 )
+
+(use-package forge)
+
 #+END_SRC
 
     There are several tricks I like to do with Magit.
@@ -161,24 +134,6 @@ I accept the risk. Theme tooltips too.
      ~master~), and then within the magit screen, I just hit ~b s~,
      making a spinoff of master, with the last commits.  This is so
      convenient :)
-
-**** managing/creating pull requests
-
-     For creating pull requests, I use the ~magit-gh-pulls~ package,
-     that connects to the github API via HTTP and allows me to create,
-     list, and see the Pull Requests for the repo.
-
-     Normally I need to edit the ~.git/config~ file and add the remote
-     github repo:
-
-#+BEGIN_SRC
-[magit]
-        gh-pulls-repo = jeffusan/$repo
-#+END_SRC
-
-     After that's set, I can just ~# g~ to refresh the latest pull
-     requests, ~# o~ on a pr of the list to open in firefox, or ~# c~
-     to create a new PR from the existing changes.
 
 *** Projectile
 #+BEGIN_SRC emacs-lisp
@@ -215,6 +170,7 @@ I accept the risk. Theme tooltips too.
   :config
   (autopair-global-mode))
 #+END_SRC
+
 *** Hydra
 
     Hydra allows me to create menus of keybindings.  I have several
@@ -382,6 +338,7 @@ I accept the risk. Theme tooltips too.
   :ensure t
   :config (golden-ratio-mode))
 #+END_SRC
+
 *** Eshell Configuration
 #+BEGIN_SRC emacs-lisp
 (global-set-key (kbd "C-c e") 'eshell)
@@ -464,6 +421,7 @@ For extending the search to the next word, use M-j.
   :bind (("C-s" . swiper)
          ("C-;" . swiper-avy)))
 #+END_SRC
+
 ** Themes
 
    I switch between a big number of themes, sometimes several times a
@@ -492,12 +450,6 @@ For extending the search to the next word, use M-j.
 (use-package madhat2r-theme :ensure t :defer t)
 (use-package kosmos-theme :ensure t :defer t)
 (use-package nord-theme :ensure t :defer t)
-#+END_SRC
-
-** Some more configuration for when all packages have been loaded
-
-#+BEGIN_SRC emacs-lisp
-(require 'bind-key)
 #+END_SRC
 
 ** Programming languages
@@ -543,25 +495,38 @@ For extending the search to the next word, use M-j.
 
 #+END_SRC
 
+** Some more configuration for when all packages have been loaded
+
+#+BEGIN_SRC emacs-lisp
+(require 'bind-key)
+#+END_SRC
+
 ** Thanks
 
-Most of this is borrowed configuration from others.
+Most of this is borrowed configuration from others. I thank them here, but 
+also check the Footnotes.
 
-- Thanks to Pepe Garcia, https://github.com/pepegar
-- and Bodil Stokke, https://github.com/bodil
-in particular.
+Thanks to Pepe Garcia[fn:1], most of this is his.
 
-Also 
-- [fn:2]anler
-- [fn:3]danielmai
-- [fn:4]jwiegley
-- [fn:5]abo-abo
-
+Also Bodil Stokke[fn:7]; ohai emacs remains an inspiration.
 
 * Footnotes
 
-[fn:1] https://github.com/pashky/restclient.el
+[fn:1] https://github.com/pepegar/.emacs.d
 [fn:2] https://github.com/anler/.emacs.d
 [fn:3] https://github.com/danielmai
 [fn:4] https://github.com/jwiegley
 [fn:5] https://github.com/abo-abo
+[fn:6] https://github.com/pashky/restclient.el
+[fn:7] https://github.com/bodil
+
+* Thanks
+
+While this emacs config is largely derived from Pepe Garcia, 
+I have a long list of Emacs friends to thank.
+Coincidentally they all have their own websites:
+
+- Julian Danjou: https://julien.danjou.info/
+- Just Ambrahms: https://justin.abrah.ms/
+- Steve Purcell: https://www.sanityinc.com/
+- Bodil Stokke: https://bodil.lol/
