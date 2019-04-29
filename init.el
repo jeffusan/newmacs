@@ -47,7 +47,7 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (forge magit-popup magit-gh-pulls flycheck go-complete go-eldoc go-mode auto-complete ensime nord-theme kosmos-theme madhat2r-theme sublime-themes subatomic-theme soothe-theme plan9-theme heroku-theme github-theme espresso-theme cyberpunk-theme bliss-theme birds-of-paradise-plus-theme atom-one-dark-theme arjen-grey-theme white-theme punpun-theme idea-darkula-theme doom-themes neotree counsel-projectile counsel flx ivy yaml-mode terraform-mode exec-path-from-shell golden-ratio expand-region org-bullets restclient autopair projectile magit use-package paradox))))
+    (yaml-tomato forge magit-popup magit-gh-pulls flycheck go-complete go-eldoc go-mode auto-complete ensime nord-theme kosmos-theme madhat2r-theme sublime-themes subatomic-theme soothe-theme plan9-theme heroku-theme github-theme espresso-theme cyberpunk-theme bliss-theme birds-of-paradise-plus-theme atom-one-dark-theme arjen-grey-theme white-theme punpun-theme idea-darkula-theme doom-themes neotree counsel-projectile counsel flx ivy yaml-mode terraform-mode exec-path-from-shell golden-ratio expand-region org-bullets restclient autopair projectile magit use-package paradox))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
