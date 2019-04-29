@@ -37,6 +37,12 @@ cheatsheets all here.
 (defalias 'yes-or-no-p 'y-or-n-p)
 #+END_SRC
 
+    Set custom settings in their own file
+#+BEGIN_SRC emacs-lisp
+(setq custom-file "~/.emacs.d/custom.el")
+(load custom-file)
+#+END_SRC
+
 *** Appearance
 
     Select the font size, family...
