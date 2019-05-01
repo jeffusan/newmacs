@@ -26,7 +26,8 @@
 (add-to-list 'package-archives '("melpa-stable" . "http://stable.melpa.org/packages/") t)
 
 (package-initialize)
-;; (package-refresh-contents)
+ (unless package-archive-contents (package-refresh-contents))
+;(package-refresh-contents)
 
 (package-install 'paradox)
 
