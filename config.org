@@ -2,11 +2,6 @@
 
 This is my emacs configuration in Org mode.
 
-The idea behind using org mode for this is that I can get rid of all
-these cheatsheets I've flying around my system (and also physical
-desk) and have both the emacs-lisp code, the notes, and the
-cheatsheets all here.
-
 ** Initial configuration
 *** Some personal information
 
@@ -18,9 +13,12 @@ cheatsheets all here.
 *** Help emacs find my executables
 
 #+BEGIN_SRC emacs-lisp
-(setq exec-path (append exec-path '("/usr/local/bin")))
-(setq exec-path (append exec-path '("/home/jeff/bin")))
-(setq exec-path (append exec-path '("/home/jeff/go/bin")))
+(setq exec-path 
+    (append exec-path 
+        (list 
+            '("/usr/local/bin") 
+            '("/home/jeff/bin") 
+            '("/home/jeff/go/bin"))))
 #+END_SRC
 
 *** plumbing
@@ -39,8 +37,11 @@ cheatsheets all here.
 
     Set custom settings in their own file
 #+BEGIN_SRC emacs-lisp
-(setq custom-file "~/.emacs.d/custom.el")
-(load custom-file)
+;; Figure out the path to our .emacs.d by getting the path part of the
+;; current file (`init.el`).
+(setq dotfiles-dir (file-name-directory (or (buffer-file-name) (file-chase-links load-file-name))))
+(setq custom-file (concat dotfiles-dir "custom.el"))
+(load custom-file 'noerror)
 #+END_SRC
 
 *** Appearance
@@ -114,8 +115,6 @@ I accept the risk. Theme tooltips too.
 ** Tools
 *** Magit
 
-    Magit is a better way to use git, from within emacs, of course.
-
 #+BEGIN_SRC emacs-lisp
 (use-package magit
   :ensure t
@@ -126,20 +125,6 @@ I accept the risk. Theme tooltips too.
 (use-package forge)
 
 #+END_SRC
-
-    There are several tricks I like to do with Magit.
-
-**** commit & spinoff branch
-
-     Normally, when I work on a small patch for a project I don't
-     directly start creating the feature branch, but first create the
-     commit/commits that solve the issue and then create the branch &
-     pull request.
-
-     I do this by fixing and creating the commits normally (on top of
-     ~master~), and then within the magit screen, I just hit ~b s~,
-     making a spinoff of master, with the last commits.  This is so
-     convenient :)
 
 *** Projectile
 #+BEGIN_SRC emacs-lisp
@@ -187,7 +172,6 @@ I accept the risk. Theme tooltips too.
 (use-package hydra
   :ensure t
   :bind (("C-x t" . toggle/body)
-	 ("C-x j" . gotoline/body)
          ("C-x ," . scala/body)
 	 ("C-x p" . dotfiles/body))
   :config
@@ -208,19 +192,6 @@ I accept the risk. Theme tooltips too.
     ("t" toggle-truncate-lines "truncate")
     ("w" whitespace-mode "whitespace")
     ("q" nil "cancel"))
-
-  (defhydra gotoline
-    ( :pre (linum-mode 1)
-	   :post (linum-mode -1))
-    "goto"
-    ("t" (lambda () (interactive)(move-to-window-line-top-bottom 0)) "top")
-    ("b" (lambda () (interactive)(move-to-window-line-top-bottom -1)) "bottom")
-    ("m" (lambda () (interactive)(move-to-window-line-top-bottom)) "middle")
-    ("e" (lambda () (interactive)(end-of-buffer)) "end")
-    ("c" recenter-top-bottom "recenter")
-    ("n" next-line "down")
-    ("p" (lambda () (interactive) (forward-line -1))  "up")
-    ("g" goto-line "goto-line")))
 
   (defhydra dotfiles (:color black)
     "dotfiles"
@@ -246,7 +217,7 @@ I accept the risk. Theme tooltips too.
     | ~C-c C-.~  | mark the query under the cursor                                                                |
     | ~C-c C-u~  | copy query under the cursor as a curl command                                                  |
     | ~C-c C-g~  | start a helm session with sources for variables and requests (if helm is available, of course) |
-    | ~C-c n n~  | narrow to regi                                                                                 |
+    | ~C-c n n~  | narrow to region                                                                               |
 
 #+BEGIN_SRC emacs-lisp
 (use-package restclient
@@ -255,9 +226,6 @@ I accept the risk. Theme tooltips too.
 #+END_SRC
 
 *** Org mode
-
-    I try to write down everything in org mode, and to keep it
-    updated.  This is my current configuration.
 
 #+BEGIN_SRC emacs-lisp
 (use-package org
@@ -430,10 +398,6 @@ For extending the search to the next word, use M-j.
 
 ** Themes
 
-   I switch between a big number of themes, sometimes several times a
-   day, depending on my mood.  The ones I stick with as of now, are
-   the following:
-
 #+BEGIN_SRC emacs-lisp
 (use-package doom-themes :pin melpa-stable :ensure t :defer t)
 (use-package idea-darkula-theme :ensure t :defer t)
@@ -459,9 +423,6 @@ For extending the search to the next word, use M-j.
 #+END_SRC
 
 ** Programming languages
-
-   At the time of writing this, I mostly write scala, but I've used a
-   number of languages previously:
 
 #+BEGIN_SRC emacs-lisp
 (use-package ensime
@@ -525,14 +486,3 @@ Also Bodil Stokke[fn:7]; ohai emacs remains an inspiration.
 [fn:5] https://github.com/abo-abo
 [fn:6] https://github.com/pashky/restclient.el
 [fn:7] https://github.com/bodil
-
-* Thanks
-
-While this emacs config is largely derived from Pepe Garcia, 
-I have a long list of Emacs friends to thank.
-Coincidentally they all have their own websites:
-
-- Julian Danjou: https://julien.danjou.info/
-- Just Ambrahms: https://justin.abrah.ms/
-- Steve Purcell: https://www.sanityinc.com/
-- Bodil Stokke: https://bodil.lol/
