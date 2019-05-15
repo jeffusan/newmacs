@@ -11,4 +11,6 @@ ido.last
 ac-comphist.dat
 history
 recentf
-etc/custom.el
+custom.el
+transient/
+forge-database.sqlite
