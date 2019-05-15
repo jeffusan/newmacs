@@ -198,7 +198,7 @@ I accept the risk. Theme tooltips too.
     ("c" (find-file "~/.emacs.d/config.org") "config.org")
     ("b" (find-file "~/.bashrc") "bashrc")
     ("s" (find-file "~/Source") "Source")
-    ("q" nil "cancel"))
+    ("q" nil "cancel")))
 
 #+END_SRC
 
