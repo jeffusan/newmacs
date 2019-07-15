@@ -33,6 +33,7 @@ This is my emacs configuration in Org mode.
 
 #+BEGIN_SRC emacs-lisp
 (defalias 'yes-or-no-p 'y-or-n-p)
+(setq dired-listing-switches "-alh")
 #+END_SRC
 
     Set custom settings in their own file
@@ -396,6 +397,29 @@ For extending the search to the next word, use M-j.
          ("C-;" . swiper-avy)))
 #+END_SRC
 
+*** Docker
+#+BEGIN_SRC emacs-lisp
+(use-package dockerfile-mode
+  :ensure t
+  :mode ("Dockerfile\\'" . dockerfile-mode))
+
+(use-package docker
+  :ensure t)
+
+(use-package docker-api
+  :defer t)
+
+(use-package docker-compose-mode
+  :ensure t)
+
+(use-package docker-tramp
+  :ensure t)
+
+(use-package docker
+  :ensure t
+  :bind ("C-c d" . docker))
+#+END_SRC
+    
 ** Themes
 
 #+BEGIN_SRC emacs-lisp
