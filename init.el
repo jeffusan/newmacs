@@ -40,4 +40,7 @@
 ;;; Load the config
 (org-babel-load-file (concat user-emacs-directory "config.org"))
 
+(use-package f)
+(f-mkdir "org")
+
 (setq gc-cons-threshold 800000)

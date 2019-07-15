@@ -115,6 +115,13 @@ I accept the risk. Theme tooltips too.
 
 ** Tools
 *** Magit
+From within a git repository, `C-x g` for status.
+Stage changes.
+`c` for commit.
+`M-x magit-push` to push.
+Magit is a git porcelin.
+
+https://github.com/magit/forge
 
 #+BEGIN_SRC emacs-lisp
 (use-package magit
@@ -128,6 +135,9 @@ I accept the risk. Theme tooltips too.
 #+END_SRC
 
 *** Projectile
+https://github.com/bbatsov/projectile
+
+Project Interaction Library
 #+BEGIN_SRC emacs-lisp
 (use-package projectile
   :commands (all-the-icons-icon-for-dir all-the-icons-icon-for-file)
@@ -165,9 +175,7 @@ I accept the risk. Theme tooltips too.
 
 *** Hydra
 
-    Hydra allows me to create menus of keybindings.  I have several
-    ones, for accessing my dotfiles, spelllchecking, going to my org
-    files...
+    Hydra allows me to create menus of keybindings.
 
 #+BEGIN_SRC emacs-lisp
 (use-package hydra
@@ -227,6 +235,13 @@ I accept the risk. Theme tooltips too.
 #+END_SRC
 
 *** Org mode
+
+Your life in plain text.
+
+When emacs is initialized it will create a directory org in your home. Org files will be stored there.
+
+C-c c prompts for a menu of options for creating notes, todo lists, etc.
+C-c a a prompts a menu of options for listing activity.
 
 #+BEGIN_SRC emacs-lisp
 (use-package org
