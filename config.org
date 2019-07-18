@@ -251,26 +251,113 @@ C-c a a prompts a menu of options for listing activity.
 	 ("C-c c" . org-capture)
   )
   :config
-
-  (use-package org-bullets
-    :ensure t
-    :commands (org-bullets-mode)
-    :init (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
-
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((dot . t)
-     (mscgen . t)
-     (python . t)))
-  (setq org-agenda-files '("~/org/")
-	org-default-notes-file (concat org-directory "/notes.org")
-	org-capture-templates '(("a" "Appointment" entry (file  "~/org/appointments.org" "Appointments") "* TODO %?\n:PROPERTIES:\n\n:END:\nDEADLINE: %^T \n %i\n\n")
-				("n" "Note" entry (file+headline "~/org/notes.org" "Notes") "* Note %?\n%T")
-				("l" "Link" entry (file+headline "~/org/links.org" "Links") "* %? %^L %^g \n%T" :prepend t)
-				("P" "Paper" entry (file+headline "~/org/papers.org" "Papers") "* %? %^L %^g \n%T" :prepend t)
-				("t" "To Do Item" entry (file+headline "~/org/i.org" "Work") "* TODO %?\n%T" :prepend t)
-				("p" "Personal To Do Item" entry (file+headline "~/org/i.org" "Personal") "* TODO %?\n%T" :prepend t))
-	org-src-fontify-natively t))
+  (setq org-refile-targets '(("~/org/gtd.org" :maxlevel . 3)
+                           ("~/org/someday.org" :level . 1)
+                           ("~/org/tickler.org" :maxlevel . 2)))
+  (setq org-agenda-files '("~/org/inbox.org" "~/org/gtd.org" "~/org/tickler.org")
+	org-default-notes-file (concat org-directory "~/org/notes.org")
+	org-capture-templates '(
+          ("t" "Todo [inbox]" entry (file+headline "~/org/inbox.org" "Tasks") "* TODO %i%?")
+          ("T" "Tickler" entry (file+headline "~/org/tickler.org" "Tickler") "* %i%? \n %U")
+        )
+	org-src-fontify-natively t)
+  (setq 
+    og-org-agenda-appt-headline "APPT"
+    org-agenda-log-mode-items (quote( closed clock state))
+    org-agenda-restore-windows-after-quit t
+    org-agenda-show-future-repeats nil
+    org-agenda-span (quote week)
+    org-capture-use-agenda-date t
+    org-clock-clocked-in-display (quote mode-line)
+    org-clock-in-resume t
+    org-clock-mode-line-total (quote today)
+  )
+  (setq org-agenda-custom-commands
+   (quote
+    (("w" . "TODOs")
+     ("d" "30 days deadlines" agenda ""
+      ((org-agenda-entry-types
+        (quote
+         (:deadline)))
+       (org-agenda-overriding-header "Month deadlines")
+       (org-agenda-span
+        (quote month))))
+     ("l" "Logbook" nico/org-agenda-log ""
+      ((org-agenda-overriding-header "Logbook")))
+     ("A" "Aurélia" tags-todo "aurelia" nil)
+     ("E" "Errands" tags-todo "@errands" nil)
+     ("n" "Next actions"
+      ((alltodo ""
+                ((org-agenda-overriding-header "Next actions")
+                 (org-agenda-skip-function
+                  (quote
+                   (org-agenda-skip-all-siblings-but-first)))
+                 (org-agenda-prefix-format "%-32:(org-agenda-format-parent 30)")
+                 (org-agenda-todo-keyword-format "%-4s")
+                 (org-agenda-files
+                  (quote
+                   ("~/org/gtd.org")))
+                 (org-agenda-category-filter-preset
+                  (quote
+                   ("+projects"))))))
+      nil nil)
+     ("@" "Contexts"
+      ((tags "ftgp"
+             ((org-agenda-skip-function
+               (quote
+                (org-agenda-skip-all-siblings-but-first)))
+              (org-agenda-overriding-header "FTGP next actions")
+              (org-agenda-prefix-format "%-32:(org-agenda-format-parent 30)")))
+       (tags "emacs"
+             ((org-agenda-overriding-header "Emacs next actions")
+              (org-agenda-skip-function
+               (quote
+                (org-agenda-skip-all-siblings-but-first)))
+              (org-agenda-prefix-format "%-32:(org-agenda-format-parent 30)")))
+       (tags-todo "@phone"
+                  ((org-agenda-overriding-header "Phone calls")
+                   (org-agenda-skip-function
+                    (quote
+                     (org-agenda-skip-entry-if
+                      (quote todo)
+                      (quote done))))
+                   (org-agenda-prefix-format "%-32:(org-agenda-format-parent 30)")))
+       (todo "WAITING"
+             ((org-agenda-overriding-header "Waiting")
+              (org-agenda-prefix-format "%-32:(org-agenda-format-parent 30)")))
+       (tags-todo "@work"
+                  ((org-agenda-skip-function
+                    (quote
+                     (org-agenda-skip-all-siblings-but-first)))
+                   (org-agenda-overriding-header "At work")
+                   (org-agenda-prefix-format "%-32:(org-agenda-format-parent 30)")))
+       (tags-todo "@plourin"
+                  ((org-agenda-overriding-header "At Plourin")
+                   (org-agenda-skip-function
+                    (quote
+                     (org-agenda-skip-all-siblings-but-first)))
+                   (org-agenda-prefix-format "%-32:(org-agenda-format-parent 30)")))
+       (tags-todo "@stmartin"
+                  ((org-agenda-overriding-header "At Saint Martin")
+                   (org-agenda-skip-function
+                    (quote
+                     (org-agenda-skip-all-siblings-but-first)))
+                   (org-agenda-prefix-format "%-32:(org-agenda-format-parent 30)")))
+       (tags-todo "@stockholm"
+                  ((org-agenda-overriding-header "At Stockholm")
+                   (org-agenda-skip-function
+                    (quote
+                     (org-agenda-skip-all-siblings-but-first)))
+                   (org-agenda-prefix-format "%-32:(org-agenda-format-parent 30)")))
+       (tags-todo "@home"
+                  ((org-agenda-overriding-header "At Home")
+                   (org-agenda-skip-function
+                    (quote
+                     (org-agenda-skip-all-siblings-but-first)))
+                   (org-agenda-prefix-format "%-32:(org-agenda-format-parent 30)"))))
+      nil nil)))
+  )
+  )
 #+END_SRC
     
 *** Expand region
@@ -463,6 +550,7 @@ For extending the search to the next word, use M-j.
 
 ** Programming languages
 
+*** Scala
 #+BEGIN_SRC emacs-lisp
 (use-package ensime
   :ensure t
@@ -475,10 +563,17 @@ For extending the search to the next word, use M-j.
   :config
   (use-package sbt-mode :ensure t))
 
+#+END_SRC
+
+*** Go
+It's a sad day when you have fallen to writing Go code.
+
+#+BEGIN_SRC emacs-lisp
 (use-package auto-complete :ensure)
 (defun auto-complete-for-go ()
   (auto-complete-mode 1))
   (add-hook 'go-mode-hook 'auto-complete-for-go)
+
 
 (use-package go-mode
   :ensure t
@@ -499,6 +594,14 @@ For extending the search to the next word, use M-j.
       (setq gofmt-command "goimports")
       (add-hook 'before-save-hook 'gofmt-before-save)))
 
+#+END_SRC
+
+*** Python
+#+BEGIN_SRC emacs-lisp
+(use-package elpy
+  :ensure t
+  :init
+  (elpy-enable))
 #+END_SRC
 
 ** Some more configuration for when all packages have been loaded
