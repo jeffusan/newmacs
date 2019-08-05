@@ -251,6 +251,7 @@ C-c a a prompts a menu of options for listing activity.
 	 ("C-c c" . org-capture)
   )
   :config
+(doom-themes-org-config)
   (setq org-refile-targets '(("~/org/gtd.org" :maxlevel . 3)
                            ("~/org/someday.org" :level . 1)
                            ("~/org/tickler.org" :maxlevel . 2)))
@@ -259,6 +260,7 @@ C-c a a prompts a menu of options for listing activity.
 	org-capture-templates '(
           ("t" "Todo [inbox]" entry (file+headline "~/org/inbox.org" "Tasks") "* TODO %i%?")
           ("T" "Tickler" entry (file+headline "~/org/tickler.org" "Tickler") "* %i%? \n %U")
+	  ("n" "Note" entry (file+headline "~/org/notes.org" "Notes") "* Note %?\n%T")
         )
 	org-src-fontify-natively t)
   (setq 
