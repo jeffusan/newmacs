@@ -3,7 +3,7 @@
 
 ;; Adjust garbage collection thresholds during startup, and thereafter
 (setq gc-cons-threshold 400000000)
-
+(setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
 (package-initialize)
 
 ;;; Begin initialization
