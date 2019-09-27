@@ -2,6 +2,7 @@
 
 
 ;; Adjust garbage collection thresholds during startup, and thereafter
+(setq package-check-signature nil)
 (setq gc-cons-threshold 400000000)
 (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
 (package-initialize)

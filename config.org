@@ -251,7 +251,6 @@ C-c a a prompts a menu of options for listing activity.
 	 ("C-c c" . org-capture)
   )
   :config
-(doom-themes-org-config)
   (setq org-refile-targets '(("~/org/gtd.org" :maxlevel . 3)
                            ("~/org/someday.org" :level . 1)
                            ("~/org/tickler.org" :maxlevel . 2)))
